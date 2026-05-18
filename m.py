@@ -2,7 +2,7 @@
 AnimeVerse Upload Bot — Caption Auto-Detect Mode
 =================================================
 Install:  pip install pyTelegramBotAPI firebase-admin
-Run:      python bot.py
+Run:      python m.py
 
 Flow:
   1. /setup anime-id S1   → anime aur season set karo (ek baar)
@@ -13,21 +13,22 @@ Flow:
 """
 
 import re
+import os
+import json
 import telebot
 import firebase_admin
 from firebase_admin import credentials, db
 
 # ══════════════════════════════════════════════════════
-#   SETTINGS — Sirf yahan apna data daalo
+#   SETTINGS — Hugging Face Secrets se load hoga
 # ══════════════════════════════════════════════════════
 
-BOT_TOKEN       = "8945923349:AAE3CFpT6Iadsl4WKRLkYMSqYufKz2r-Y5M"
+BOT_TOKEN       = os.environ["BOT_TOKEN"]
 BOT_USERNAME    = "D0file_Bot"         # @ke bina
-ALLOWED_USER    = 7373324949
+ALLOWED_USER    = int(os.environ["ALLOWED_USER"])
 
-STORAGE_CHANNEL = -1003963251495
+STORAGE_CHANNEL = int(os.environ["STORAGE_CHANNEL"])
 FIREBASE_URL    = "https://animeverse-9eada-default-rtdb.firebaseio.com/"
-FIREBASE_CRED   = "key.json"
 
 # Kitni qualities per episode? (3 = 480p+720p+1080p)
 # Jab yeh count pura ho → auto save
@@ -37,7 +38,9 @@ QUALITIES_PER_EP = 3
 #   INIT
 # ══════════════════════════════════════════════════════
 
-cred = credentials.Certificate(FIREBASE_CRED)
+# Firebase key.json ki jagah env variable se load hoga
+_key_data = json.loads(os.environ["FIREBASE_KEY_JSON"])
+cred = credentials.Certificate(_key_data)
 firebase_admin.initialize_app(cred, {"databaseURL": FIREBASE_URL})
 
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -368,6 +371,7 @@ def handle_file(msg):
     # Duplicate file check — same size ki file dobara aayi?
     existing_sizes = [f["size"] for f in ep_buffer[ep_num]]
     if file_size in existing_sizes:
+        ep_key = f"E{str(ep_num).zfill(2)}"
         bot.reply_to(msg, f"⚠️ *{ep_key} — Same file dobara aai! Skip kar raha hoon.*", parse_mode="Markdown")
         return
 
@@ -404,8 +408,6 @@ def handle_file(msg):
 print("=" * 50)
 print("  🤖 AnimeVerse Bot v2 — Caption Mode")
 print(f"  📦 Storage: t.me/c/{_cid}/")
-print("  Ctrl+C se band karo")
 print("=" * 50)
 
-bot.polling(none_stop=True, interval=1)
-
+bot.infinity_polling()
