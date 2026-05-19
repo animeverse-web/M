@@ -32,6 +32,11 @@ if firebase_key_env:
     firebase_key = json.loads(firebase_key_env)
     cred = credentials.Certificate(firebase_key)
 else:
+    firebase_key_env = os.environ.get("FIREBASE_KEY")
+if firebase_key_env:
+    firebase_key = json.loads(firebase_key_env)
+    cred = credentials.Certificate(firebase_key)
+else:
     cred = credentials.Certificate("key.json")
 
 firebase_admin.initialize_app(cred, {"databaseURL": FIREBASE_URL})
