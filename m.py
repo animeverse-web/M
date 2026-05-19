@@ -1,8 +1,5 @@
 """
 AnimeVerse Upload Bot v3 — Caption Mode + Web View
-===================================================
-Install:  pip install pyTelegramBotAPI firebase-admin flask
-Run:      python bot.py
 """
 
 import re
@@ -19,7 +16,7 @@ from flask import Flask
 #   SETTINGS
 # ══════════════════════════════════════════════════════
 
-BOT_TOKEN        = "8945923349:AAH_WARTUVpaFmEznK_xNy-nHplzWqTeXGs"
+BOT_TOKEN        = os.environ.get("BOT_TOKEN", "8945923349:AAH_WARTUVpaFmEznK_xNy-nHplzWqTeXGs")
 BOT_USERNAME     = "D0file_Bot"
 ALLOWED_USER     = 7373324949
 STORAGE_CHANNEL  = -1003963251495
@@ -27,17 +24,14 @@ FIREBASE_URL     = "https://animeverse-9eada-default-rtdb.firebaseio.com/"
 QUALITIES_PER_EP = 3
 
 # ══════════════════════════════════════════════════════
-#   FIREBASE INIT — key.json ya Environment Variable
+#   FIREBASE INIT
 # ══════════════════════════════════════════════════════
 
 firebase_key_env = os.environ.get("FIREBASE_KEY")
-
 if firebase_key_env:
-    # Railway pe environment variable se
     firebase_key = json.loads(firebase_key_env)
     cred = credentials.Certificate(firebase_key)
 else:
-    # Local pe key.json se
     cred = credentials.Certificate("key.json")
 
 firebase_admin.initialize_app(cred, {"databaseURL": FIREBASE_URL})
@@ -142,7 +136,7 @@ def health():
     return "OK", 200
 
 def run_flask():
-    port = int(os.environ.get("PORT", 8080))  # Railway PORT variable
+    port = int(os.environ.get("PORT", 8080))
     web.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
 
 # ══════════════════════════════════════════════════════
