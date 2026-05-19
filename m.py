@@ -3,10 +3,11 @@ AnimeVerse Upload Bot v3 — Caption Mode + Web View
 ===================================================
 Install:  pip install pyTelegramBotAPI firebase-admin flask
 Run:      python bot.py
-Web:      http://localhost:8080
 """
 
 import re
+import os
+import json
 import time
 import threading
 import telebot
@@ -18,19 +19,27 @@ from flask import Flask
 #   SETTINGS
 # ══════════════════════════════════════════════════════
 
-BOT_TOKEN        = "8945923349:AAGhOUoRLcIvF0p5choPl4rZw8h6MOb9Q_E"  # ← BotFather se naya lo
+BOT_TOKEN        = "8945923349:AAGhOUoRLcIvF0p5choPl4rZw8h6MOb9Q_E"
 BOT_USERNAME     = "D0file_Bot"
 ALLOWED_USER     = 7373324949
 STORAGE_CHANNEL  = -1003963251495
 FIREBASE_URL     = "https://animeverse-9eada-default-rtdb.firebaseio.com/"
-FIREBASE_CRED    = "key.json"
 QUALITIES_PER_EP = 3
 
 # ══════════════════════════════════════════════════════
-#   FIREBASE + BOT INIT
+#   FIREBASE INIT — key.json ya Environment Variable
 # ══════════════════════════════════════════════════════
 
-cred = credentials.Certificate(FIREBASE_CRED)
+firebase_key_env = os.environ.get("FIREBASE_KEY")
+
+if firebase_key_env:
+    # Railway pe environment variable se
+    firebase_key = json.loads(firebase_key_env)
+    cred = credentials.Certificate(firebase_key)
+else:
+    # Local pe key.json se
+    cred = credentials.Certificate("key.json")
+
 firebase_admin.initialize_app(cred, {"databaseURL": FIREBASE_URL})
 bot = telebot.TeleBot(BOT_TOKEN)
 
@@ -133,7 +142,8 @@ def health():
     return "OK", 200
 
 def run_flask():
-    web.run(host="0.0.0.0", port=8080, debug=False, use_reloader=False)
+    port = int(os.environ.get("PORT", 8080))  # Railway PORT variable
+    web.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
 
 # ══════════════════════════════════════════════════════
 #   CAPTION PARSER
@@ -260,7 +270,6 @@ def cmd_start(msg):
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 👤 Admin: `{ALLOWED_USER}`
 🤖 Bot: @{BOT_USERNAME}
-🌐 Web: `http://localhost:8080`
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 📌 *Commands:*
 `/setup anime-id S1` — Season shuru
@@ -462,16 +471,13 @@ Caption mein `Episode - 04` ya `E04` hona chahiye.
 print("=" * 50)
 print("  🤖 AnimeVerse Bot v3 Starting...")
 print(f"  📦 Storage: {STORAGE_CHANNEL}")
-print(f"  🌐 Web: http://localhost:8080")
 print("  Ctrl+C se band karo")
 print("=" * 50)
 
-# Flask alag thread mein
 flask_thread = threading.Thread(target=run_flask, daemon=True)
 flask_thread.start()
-print("  ✅ Web server started: http://localhost:8080")
+print("  ✅ Web server started")
 
-# Bot main thread mein — auto restart
 while True:
     try:
         print("  🔄 Bot polling shuru...")
