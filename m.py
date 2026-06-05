@@ -485,4 +485,4 @@ while True:
         print(f"  ⚠️ Crash: {e}")
         print("  ⏳ 10 sec mein restart...")
         time.sleep(10)
-    
+                                    
