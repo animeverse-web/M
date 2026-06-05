@@ -289,9 +289,10 @@ def cmd_setup(msg):
     if msg.from_user.id != ALLOWED_USER:
         return
     try:
-        parts    = msg.text.split()
-        anime_id = parts[1]
-        season   = parts[2].upper()
+        parts      = msg.text.split()
+        anime_id   = parts[1]
+        raw_season = parts[2].upper()
+        season     = raw_season if raw_season.startswith('S') else f"S{raw_season}"
         reset_all()
         session["anime_id"] = anime_id
         session["season"]   = season
@@ -360,10 +361,11 @@ def cmd_check(msg):
     if msg.from_user.id != ALLOWED_USER:
         return
     try:
-        parts    = msg.text.split()
-        anime_id = parts[1]
-        season   = parts[2].upper()
-        ep_num   = str(parts[3]).zfill(2)
+        parts      = msg.text.split()
+        anime_id   = parts[1]
+        raw_season = parts[2].upper()
+        season     = raw_season if raw_season.startswith('S') else f"S{raw_season}"
+        ep_num     = str(parts[3]).zfill(2)
         data = db.reference(f"anime_links/{anime_id}/{season}/E{ep_num}").get()
         if data:
             lines = [f"📊 *{anime_id} | {season} | E{ep_num}*\n━━━━━━━━━━━━━━━━"]
@@ -381,10 +383,11 @@ def cmd_delete(msg):
     if msg.from_user.id != ALLOWED_USER:
         return
     try:
-        parts    = msg.text.split()
-        anime_id = parts[1]
-        season   = parts[2].upper()
-        ep_num   = str(parts[3]).zfill(2)
+        parts      = msg.text.split()
+        anime_id   = parts[1]
+        raw_season = parts[2].upper()
+        season     = raw_season if raw_season.startswith('S') else f"S{raw_season}"
+        ep_num     = str(parts[3]).zfill(2)
         db.reference(f"anime_links/{anime_id}/{season}/E{ep_num}").delete()
         bot.reply_to(msg, f"🗑️ *E{ep_num} deleted!*\n`{anime_id}/{season}/E{ep_num}`",
                      parse_mode="Markdown")
